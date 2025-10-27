@@ -113,5 +113,7 @@ int main()
 		}
 	}
 
+	printf("SYS_riscv_hwprobe %d\n", SYS_riscv_hwprobe);
+
 	return EXIT_SUCCESS;
 }
