@@ -8,6 +8,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"syscall"
 	"unsafe"
 )
@@ -98,9 +100,55 @@ type extDesc struct {
 	Key      uint64
 	Text     string
 	Required bool
+	Since    uint32
+}
+
+
+func getKernelVersion() (uint32) {
+	var uname syscall.Utsname
+	var release string
+
+	_, _, errno := syscall.Syscall(syscall.SYS_UNAME, uintptr(unsafe.Pointer(&uname)), 0, 0)
+	if errno != 0 {
+		fmt.Fprintf(os.Stderr, "sys_riscv_uname failed: %v\n", errno)
+		return 0
+	}
+	release = string(uname.Release[:])
+
+	fmt.Printf("Kernel release: %s\n", release)
+
+	// Split the release string on the dot
+	parts := strings.Split(release, ".")
+	if len(parts) < 2 {
+		return 0
+	}
+
+	// Convert major and minor parts to uint32
+	major, err := strconv.ParseUint(parts[0], 10, 32)
+	if err != nil {
+		return 0
+	}
+
+	minor, err := strconv.ParseUint(parts[1], 10, 32)
+	if err != nil {
+		return 0
+	}
+
+	// Combine major and minor versions into a single uint32 value
+	version := (uint32(major) << 16) | uint32(minor)
+
+	return version
 }
 
 func main() {
+	var version uint32
+
+	version = getKernelVersion()
+	if (version == 0) {
+		fmt.Fprintf(os.Stderr, "Can't get kernel version number")
+		os.Exit(1)
+	}
+
 	// Initialize probe_items array
 	probeItems := [2]riscvHwprobe{
 		{Key: RISCV_HWPROBE_KEY_BASE_BEHAVIOR},
@@ -122,74 +170,74 @@ func main() {
 
 	// Define extensions
 	extensions := []extDesc{
-		{Key: RISCV_HWPROBE_IMA_FD, Text: "F and D", Required: true},
-		{Key: RISCV_HWPROBE_IMA_C, Text: "C", Required: true},
-		{Key: RISCV_HWPROBE_IMA_V, Text: "V", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZBA, Text: "Zba", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZBB, Text: "Zbb", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZBS, Text: "Zbs", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZICBOZ, Text: "Zicboz", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZBC, Text: "Zbc", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZBKB, Text: "Zbkb", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZBKC, Text: "Zbkc", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZBKX, Text: "Zbkx", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZKND, Text: "Zknd", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZKNE, Text: "Zkne", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZKNH, Text: "Zknh", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZKSED, Text: "Zksed", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZKSH, Text: "Zksh", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZKT, Text: "Zkt", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVBB, Text: "Zvbb", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVBC, Text: "Zvbc", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKB, Text: "Zvkb", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVKG, Text: "Zvkg", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKNED, Text: "Zvkned", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKNHA, Text: "Zvknha", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKNHB, Text: "Zvknhb", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKSED, Text: "Zvksed", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKSH, Text: "Zvksh", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVKT, Text: "Zvkt", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZFH, Text: "Zfh", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZFHMIN, Text: "Zfhmin", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZIHINTNTL, Text: "Zihintntl", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVFH, Text: "Zvfh", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVFHMIN, Text: "Zvfhmin", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZFA, Text: "Zfa", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZTSO, Text: "Ztso", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZACAS, Text: "Zacas", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZICNTR, Text: "Zicntr", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZICOND, Text: "Zicond", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZIHINTPAUSE, Text: "Zihintpause", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZIHPM, Text: "Zihpm", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVE32X, Text: "Zve32x", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVE32F, Text: "Zve32f", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVE64X, Text: "Zve64x", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVE64F, Text: "Zve64f", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZVE64D, Text: "Zfe64d", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZIMOP, Text: "Zimop", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZCA, Text: "Zca", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZCB, Text: "Zcb", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZCD, Text: "Zcd", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZCF, Text: "Zcf", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZCMOP, Text: "Zcmop", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZAWRS, Text: "Zawrs", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZAAMO, Text: "Zaamo", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZALRSC, Text: "Zalrsc", Required: true},
-		{Key: RISCV_HWPROBE_EXT_SUPM, Text: "Supm", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZFBFMIN, Text: "Zfbfmin", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVFBFMIN, Text: "Zvfbfmin", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZVFBFWMA, Text: "Zvfbfwma", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZICBOM, Text: "Zicbom", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZABHA, Text: "Zabha", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZALASR, Text: "Zalasr", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZICBOP, Text: "Zicbop", Required: true},
-		{Key: RISCV_HWPROBE_EXT_ZILSD, Text: "Zilsd", Required: false},
-		{Key: RISCV_HWPROBE_EXT_ZCLSD, Text: "Zclsd", Required: false},
+		{Key: RISCV_HWPROBE_IMA_FD, Text: "F and D", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_IMA_C, Text: "C", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_IMA_V, Text: "V", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBA, Text: "Zba", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBB, Text: "Zbb", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBS, Text: "Zbs", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZICBOZ, Text: "Zicboz", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBC, Text: "Zbc", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBKB, Text: "Zbkb", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBKC, Text: "Zbkc", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZBKX, Text: "Zbkx", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZKND, Text: "Zknd", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZKNE, Text: "Zkne", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZKNH, Text: "Zknh", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZKSED, Text: "Zksed", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZKSH, Text: "Zksh", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZKT, Text: "Zkt", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVBB, Text: "Zvbb", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVBC, Text: "Zvbc", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKB, Text: "Zvkb", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKG, Text: "Zvkg", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKNED, Text: "Zvkned", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKNHA, Text: "Zvknha", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKNHB, Text: "Zvknhb", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKSED, Text: "Zvksed", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKSH, Text: "Zvksh", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVKT, Text: "Zvkt", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZFH, Text: "Zfh", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZFHMIN, Text: "Zfhmin", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZIHINTNTL, Text: "Zihintntl", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVFH, Text: "Zvfh", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVFHMIN, Text: "Zvfhmin", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZFA, Text: "Zfa", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZTSO, Text: "Ztso", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZACAS, Text: "Zacas", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZICNTR, Text: "Zicntr", Required: true, Since: 0x0006000f}, // 6.15
+		{Key: RISCV_HWPROBE_EXT_ZICOND, Text: "Zicond", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZIHINTPAUSE, Text: "Zihintpause", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZIHPM, Text: "Zihpm", Required: true, Since: 0x0006000f}, // 6.15
+		{Key: RISCV_HWPROBE_EXT_ZVE32X, Text: "Zve32x", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVE32F, Text: "Zve32f", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVE64X, Text: "Zve64x", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVE64F, Text: "Zve64f", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVE64D, Text: "Zfe64d", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZIMOP, Text: "Zimop", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZCA, Text: "Zca", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZCB, Text: "Zcb", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZCD, Text: "Zcd", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZCF, Text: "Zcf", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZCMOP, Text: "Zcmop", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZAWRS, Text: "Zawrs", Required: true, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZAAMO, Text: "Zaamo", Required: true, Since: 0x0006000f}, // 6.15
+		{Key: RISCV_HWPROBE_EXT_ZALRSC, Text: "Zalrsc", Required: true, Since: 0x0006000f}, // 6.15
+		{Key: RISCV_HWPROBE_EXT_SUPM, Text: "Supm", Required: true, Since: 0x0006000d}, // 6.13
+		{Key: RISCV_HWPROBE_EXT_ZFBFMIN, Text: "Zfbfmin", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVFBFMIN, Text: "Zvfbfmin", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZVFBFWMA, Text: "Zvfbfwma", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZICBOM, Text: "Zicbom", Required: true, Since: 0x0006000f}, // 6.15
+		{Key: RISCV_HWPROBE_EXT_ZABHA, Text: "Zabha", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZALASR, Text: "Zalasr", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZICBOP, Text: "Zicbop", Required: true, Since: 0x00060013}, // 6.19
+		{Key: RISCV_HWPROBE_EXT_ZILSD, Text: "Zilsd", Required: false, Since: 0},
+		{Key: RISCV_HWPROBE_EXT_ZCLSD, Text: "Zclsd", Required: false, Since: 0},
 	}
 
 	// Check extensions
 	for _, ext := range extensions {
-		if probeItems[1].Value & ext.Key == 0 && ext.Required {
+		if probeItems[1].Value & ext.Key == 0 && ext.Required && ext.Since <= version {
 			fmt.Printf("%s NOT supported\n", ext.Text)
 			os.Exit(1)
 		}
