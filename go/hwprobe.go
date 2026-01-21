@@ -115,7 +115,7 @@ func getKernelVersion() (uint32) {
 	}
 	release = string(uname.Release[:])
 
-	fmt.Printf("Kernel release: %s\n", release)
+	fmt.Printf("Kernel release %s\n", release)
 
 	// Split the release string on the dot
 	parts := strings.Split(release, ".")
@@ -243,6 +243,6 @@ func main() {
 		}
 	}
 
-	fmt.Println("All required extensions supported.")
+	fmt.Println("All required extensions supported")
 	os.Exit(0)
 }
