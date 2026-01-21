@@ -7,4 +7,4 @@ check:
 	./hwprobe
 
 clean:
-	rm hwprobe
+	rm -f hwprobe
