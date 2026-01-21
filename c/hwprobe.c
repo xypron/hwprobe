@@ -5,8 +5,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/syscall.h>
+#include <string.h>
 #include <unistd.h>
+#include <sys/syscall.h>
+#include <sys/utsname.h>
 #include <asm/hwprobe.h>
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
@@ -17,8 +19,43 @@ struct ext_desc {
 	int required;
 };
 
+static unsigned int kernel_version(void)
+{
+	struct utsname uname;
+	unsigned int major, minor;
+	char *token;
+	char *endptr;
+	int ret;
+
+	ret = syscall(SYS_uname, &uname);
+	if (ret) {
+		perror("sys_uname failed");
+		return 0;
+	}
+	printf("Kernel version: %s\n", uname.release);
+
+	token = strtok(uname.release, ".");
+	if (!token)
+		goto error;
+	major = strtol(token, &endptr, 10);
+	if (*endptr)
+		goto error;
+	token = strtok(NULL, ".");
+	if (!token)
+		goto error;
+	minor = strtol(token, &endptr, 10);
+
+	return major << 16 | minor;
+
+error:
+	fprintf(stderr, "Invalid kernel version string\n");
+
+	return 0;
+}
+
 int main()
 {
+	unsigned int version;
 	struct riscv_hwprobe probe_items[2];
 	struct ext_desc exts[] = {
 		{RISCV_HWPROBE_IMA_FD, "F and D", 1},
@@ -91,6 +128,8 @@ int main()
 	probe_items[0].value = 0;
 	probe_items[1].key = RISCV_HWPROBE_KEY_IMA_EXT_0;
 	probe_items[1].value = 0;
+
+	version = kernel_version();
 
 	// Call the hwprobe syscall
 	ret = syscall(SYS_riscv_hwprobe, probe_items, 2, 0, NULL, 0);
