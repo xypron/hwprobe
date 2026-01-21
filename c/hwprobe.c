@@ -33,7 +33,7 @@ static unsigned int kernel_version(void)
 		perror("sys_uname failed");
 		return 0;
 	}
-	printf("Kernel version: %s\n", uname.release);
+	printf("Kernel release %s\n", uname.release);
 
 	token = strtok(uname.release, ".");
 	if (!token)
