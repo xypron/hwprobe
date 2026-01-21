@@ -81,6 +81,10 @@ const (
 	RISCV_HWPROBE_EXT_ZAAMO       uint64 = 1 << 56
 	RISCV_HWPROBE_EXT_ZALRSC      uint64 = 1 << 57
 	RISCV_HWPROBE_EXT_ZABHA       uint64 = 1 << 58
+	RISCV_HWPROBE_EXT_ZALASR      uint64 = 1 << 59
+	RISCV_HWPROBE_EXT_ZICBOP      uint64 = 1 << 60
+	RISCV_HWPROBE_EXT_ZILSD       uint64 = 1 << 61
+	RISCV_HWPROBE_EXT_ZCLSD       uint64 = 1 << 62
 )
 
 // Define riscv_hwprobe structure
@@ -177,6 +181,10 @@ func main() {
 		{Key: RISCV_HWPROBE_EXT_ZVFBFWMA, Text: "Zvfbfwma", Required: false},
 		{Key: RISCV_HWPROBE_EXT_ZICBOM, Text: "Zicbom", Required: true},
 		{Key: RISCV_HWPROBE_EXT_ZABHA, Text: "Zabha", Required: false},
+		{Key: RISCV_HWPROBE_EXT_ZALASR, Text: "Zalasr", Required: false},
+		{Key: RISCV_HWPROBE_EXT_ZICBOP, Text: "Zicbop", Required: true},
+		{Key: RISCV_HWPROBE_EXT_ZILSD, Text: "Zilsd", Required: false},
+		{Key: RISCV_HWPROBE_EXT_ZCLSD, Text: "Zclsd", Required: false},
 	}
 
 	// Check extensions
