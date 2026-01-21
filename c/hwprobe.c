@@ -156,7 +156,7 @@ int main()
 		}
 	}
 
-	printf("SYS_riscv_hwprobe %d\n", SYS_riscv_hwprobe);
+	printf("All required extensions supported\n");
 
 	return EXIT_SUCCESS;
 }
