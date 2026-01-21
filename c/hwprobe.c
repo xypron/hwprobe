@@ -80,6 +80,10 @@ int main()
 		{RISCV_HWPROBE_EXT_ZVFBFWMA, "Zvfbfwma", 0},
 		{RISCV_HWPROBE_EXT_ZICBOM, "Zicbom", 1},
 		{RISCV_HWPROBE_EXT_ZABHA, "Zabha", 0},
+		{RISCV_HWPROBE_EXT_ZALASR, "Zalasr", 0},
+		{RISCV_HWPROBE_EXT_ZICBOP, "Zicbop", 1},
+		{RISCV_HWPROBE_EXT_ZILSD, "Zilsd", 0},
+		{RISCV_HWPROBE_EXT_ZCLSD, "Zclsd", 0},
 	};
 	long ret;
 
@@ -108,7 +112,6 @@ int main()
 		if (!(probe_items[1].value & exts[i].key) &&
 		    exts[i].required) {
 			printf("%s NOT supported\n", exts[i].text);
-
 			return EXIT_FAILURE;
 		}
 	}
