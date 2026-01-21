@@ -1,0 +1,64 @@
+Kernel version:,6.13.0
+F and D,supported
+C,supported
+V,supported
+Zba,supported
+Zbb,supported
+Zbs,supported
+Zicboz,supported
+Zbc,NOT supported
+Zbkb,NOT supported
+Zbkc,NOT supported
+Zbkx,NOT supported
+Zknd,NOT supported
+Zkne,NOT supported
+Zknh,NOT supported
+Zksed,NOT supported
+Zksh,NOT supported
+Zkt,supported
+Zvbb,supported
+Zvbc,NOT supported
+Zvkb,supported
+Zvkg,NOT supported
+Zvkned,NOT supported
+Zvknha,NOT supported
+Zvknhb,NOT supported
+Zvksed,NOT supported
+Zvksh,NOT supported
+Zvkt,supported
+Zfh,NOT supported
+Zfhmin,supported
+Zihintntl,supported
+Zvfh,NOT supported
+Zvfhmin,supported
+Zfa,supported
+Ztso,NOT supported
+Zacas,NOT supported
+Zicntr,NOT supported
+Zicond,supported
+Zihintpause,supported
+Zihpm,NOT supported
+Zve32x,supported
+Zve32f,supported
+Zve64x,supported
+Zve64f,supported
+Zfe64d,supported
+Zimop,supported
+Zca,supported
+Zcb,supported
+Zcd,supported
+Zcf,NOT supported
+Zcmop,supported
+Zawrs,supported
+Zaamo,NOT supported
+Zalrsc,NOT supported
+Supm,supported
+Zfbfmin,NOT supported
+Zvfbfmin,NOT supported
+Zvfbfwma,NOT supported
+Zicbom,NOT supported
+Zabha,NOT supported
+Zalasr,NOT supported
+Zicbop,NOT supported
+Zilsd,NOT supported
+Zclsd,NOT supported
