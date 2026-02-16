@@ -122,6 +122,7 @@ int main()
 		{RISCV_HWPROBE_EXT_ZICBOP, "Zicbop", 1, 0x00060013}, // 6.19
 		{RISCV_HWPROBE_EXT_ZILSD, "Zilsd", 0, 0},
 		{RISCV_HWPROBE_EXT_ZCLSD, "Zclsd", 0, 0},
+		{RISCV_HWPROBE_EXT_ZICFILP, "Zicfilp", 0, 0},
 	};
 	long ret;
 
