@@ -122,8 +122,25 @@ def kernel_version() -> int:
     return (major << 16) | minor
 
 
+def check_architecture() -> bool:
+    """Check if running on RISC-V architecture.
+
+    Returns:
+        True if running on RISC-V, False otherwise.
+    """
+    machine = os.uname().machine
+    if not machine.startswith("riscv"):
+        print(f"Error: This tool is for RISC-V systems only.", file=sys.stderr)
+        print(f"Current architecture: {machine}", file=sys.stderr)
+        return False
+    return True
+
+
 def main() -> int:
     """Probe hwcaps and return 0 when required RVA23U64 extensions exist."""
+
+    if not check_architecture():
+        return 1
 
     exts = [
         ExtDesc(1, RISCV_HWPROBE_IMA_FD, "F and D", True, 0),
