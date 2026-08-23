@@ -126,6 +126,11 @@ int main()
 		{1, RISCV_HWPROBE_EXT_ZCLSD, "Zclsd", 0, 0},
 		{1, RISCV_HWPROBE_EXT_ZICFILP, "Zicfilp", 0, 0},
 		{2, RISCV_HWPROBE_EXT_ZICFISS, "Zicfiss", 0, 0},
+		{2, RISCV_HWPROBE_EXT_ZICCLSM, "Zicclsm", 1, 0x00070003 }, // 7.3
+		{2, RISCV_HWPROBE_EXT_ZICCAMOA, "Ziccamoa", 1, 0x00070003 }, // 7.3
+		{2, RISCV_HWPROBE_EXT_ZICCIF, "Ziccif", 1, 0x00070003 }, // 7.3
+		{2, RISCV_HWPROBE_EXT_ZICCRSE, "Ziccrse", 1, 0x00070003 }, // 7.3
+		{2, RISCV_HWPROBE_EXT_ZA64RS, "Za64rs", 1, 0x00070003 }, // 7.3
 	};
 	long ret;
 

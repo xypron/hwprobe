@@ -84,6 +84,11 @@ RISCV_HWPROBE_EXT_ZILSD = 1 << 61
 RISCV_HWPROBE_EXT_ZCLSD = 1 << 62
 RISCV_HWPROBE_EXT_ZICFILP = 1 << 63
 RISCV_HWPROBE_EXT_ZICFISS = 1 << 0
+RISCV_HWPROBE_EXT_ZICCLSM = 1 << 1
+RISCV_HWPROBE_EXT_ZICCAMOA = 1 << 2
+RISCV_HWPROBE_EXT_ZICCIF = 1 << 3
+RISCV_HWPROBE_EXT_ZICCRSE = 1 << 4
+RISCV_HWPROBE_EXT_ZA64RS = 1 << 5
 
 
 class RiscvHwprobe(ctypes.Structure):
@@ -208,6 +213,11 @@ def main() -> int:
         ExtDesc(1, RISCV_HWPROBE_EXT_ZCLSD, "Zclsd", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICFILP, "Zicfilp", False, 0),
         ExtDesc(2, RISCV_HWPROBE_EXT_ZICFISS, "Zicfiss", False, 0),
+        ExtDesc(2, RISCV_HWPROBE_EXT_ZICCLSM, "Zicclsm", True, 0x00070003),  # 7.3
+        ExtDesc(2, RISCV_HWPROBE_EXT_ZICCAMOA, "Ziccamoa", True, 0x00070003),  # 7.3
+        ExtDesc(2, RISCV_HWPROBE_EXT_ZICCIF, "Ziccif", True, 0x00070003),  # 7.3
+        ExtDesc(2, RISCV_HWPROBE_EXT_ZICCRSE, "Ziccrse", True, 0x00070003),  # 7.3
+        ExtDesc(2, RISCV_HWPROBE_EXT_ZA64RS, "Za64rs", True, 0x00070003),  # 7.3
     ]
 
     version = kernel_version()
