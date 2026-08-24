@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <sys/syscall.h>
 #include <sys/utsname.h>
 #include <asm/hwprobe.h>
@@ -20,6 +21,20 @@ struct ext_desc {
 	int required;
 	unsigned int introduced;
 };
+
+static void print_usage(FILE *stream, const char *prog)
+{
+	fprintf(stream,
+		"Usage: %s [-v|--verbose] [-h|--help]\n"
+		"\n"
+		"Check whether this RISC-V system supports the extensions required\n"
+		"by the RVA23 profile, using the riscv_hwprobe() syscall.\n"
+		"\n"
+		"Options:\n"
+		"  -v, --verbose  list every extension with its detected/required status\n"
+		"  -h, --help     display this help and exit\n",
+		prog);
+}
 
 static unsigned int kernel_version(void)
 {
@@ -55,8 +70,16 @@ error:
 	return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+	static const struct option long_opts[] = {
+		{"verbose", no_argument, NULL, 'v'},
+		{"help",    no_argument, NULL, 'h'},
+		{NULL,      0,           NULL, 0},
+	};
+	int verbose = 0;
+	int opt;
+	int missing_count = 0;
 	size_t probe_item_count;
 	unsigned int version;
 	struct riscv_hwprobe probe_items[3];
@@ -134,6 +157,27 @@ int main()
 	};
 	long ret;
 
+	while ((opt = getopt_long(argc, argv, "vh", long_opts, NULL)) != -1) {
+		switch (opt) {
+		case 'v':
+			verbose = 1;
+			break;
+		case 'h':
+			print_usage(stdout, argv[0]);
+			return EXIT_SUCCESS;
+		default:
+			print_usage(stderr, argv[0]);
+			return EXIT_FAILURE;
+		}
+	}
+
+	if (optind != argc) {
+		fprintf(stderr, "%s: unexpected argument '%s'\n\n",
+			argv[0], argv[optind]);
+		print_usage(stderr, argv[0]);
+		return EXIT_FAILURE;
+	}
+
 	probe_items[0].key = RISCV_HWPROBE_KEY_BASE_BEHAVIOR;
 	probe_items[0].value = 0;
 	probe_items[1].key = RISCV_HWPROBE_KEY_IMA_EXT_0;
@@ -163,19 +207,35 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	if (verbose)
+		printf("%-14s %-10s %s\n", "Extension", "Detected", "Required by RVA23");
+
 	// Check extensions
 	for (size_t i = 0; i < ARRAY_SIZE(exts); ++i) {
 		int probe_item = exts[i].probe_item;
+		int detected = probe_item < (int)probe_item_count &&
+			       (probe_items[probe_item].value & exts[i].key) != 0;
+		int required = exts[i].required && exts[i].introduced <= version;
 
-		if ((probe_item >= probe_item_count ||
-		     !(probe_items[probe_item].value & exts[i].key)) &&
-		    exts[i].required && exts[i].introduced <= version) {
-			printf("%s NOT supported\n", exts[i].text);
-			return EXIT_FAILURE;
+		if (verbose) {
+			printf("%-14s %-10s %s\n", exts[i].text,
+			       detected ? "yes" : "no",
+			       exts[i].required ? "yes" : "no");
+		}
+
+		if (!detected && required) {
+			++missing_count;
+			if (!verbose)
+				printf("%s NOT supported\n", exts[i].text);
 		}
 	}
 
-	printf("All required extensions supported\n");
+	if (missing_count == 0) {
+		printf("Verdict: RVA23 supported\n");
+		return EXIT_SUCCESS;
+	}
 
-	return EXIT_SUCCESS;
+	printf("Verdict: RVA23 NOT supported\n");
+
+	return EXIT_FAILURE;
 }
