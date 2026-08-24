@@ -225,10 +225,8 @@ func main() {
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZFA, Text: "Zfa", Required: true, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZTSO, Text: "Ztso", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZACAS, Text: "Zacas", Required: false, Since: 0},
-		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZICNTR, Text: "Zicntr", Required: true, Since: 0x0006000f}, // 6.15
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZICOND, Text: "Zicond", Required: true, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZIHINTPAUSE, Text: "Zihintpause", Required: true, Since: 0},
-		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZIHPM, Text: "Zihpm", Required: true, Since: 0x0006000f}, // 6.15
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZVE32X, Text: "Zve32x", Required: true, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZVE32F, Text: "Zve32f", Required: true, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZVE64X, Text: "Zve64x", Required: true, Since: 0},
@@ -241,13 +239,15 @@ func main() {
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZCF, Text: "Zcf", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZCMOP, Text: "Zcmop", Required: true, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZAWRS, Text: "Zawrs", Required: true, Since: 0},
-		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZAAMO, Text: "Zaamo", Required: true, Since: 0x0006000f},   // 6.15
-		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZALRSC, Text: "Zalrsc", Required: true, Since: 0x0006000f}, // 6.15
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_SUPM, Text: "Supm", Required: true, Since: 0x0006000d},     // 6.13
+		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZICNTR, Text: "Zicntr", Required: true, Since: 0x0006000f}, // 6.15
+		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZIHPM, Text: "Zihpm", Required: true, Since: 0x0006000f}, // 6.15
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZFBFMIN, Text: "Zfbfmin", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZVFBFMIN, Text: "Zvfbfmin", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZVFBFWMA, Text: "Zvfbfwma", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZICBOM, Text: "Zicbom", Required: true, Since: 0x0006000f}, // 6.15
+		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZAAMO, Text: "Zaamo", Required: true, Since: 0x0006000f},   // 6.15
+		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZALRSC, Text: "Zalrsc", Required: true, Since: 0x0006000f}, // 6.15
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZABHA, Text: "Zabha", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZALASR, Text: "Zalasr", Required: false, Since: 0},
 		{ProbeItem: 1, Extension: RISCV_HWPROBE_EXT_ZICBOP, Text: "Zicbop", Required: true, Since: 0x00060013}, // 6.19

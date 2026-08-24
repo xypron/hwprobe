@@ -183,10 +183,8 @@ def main() -> int:
         ExtDesc(1, RISCV_HWPROBE_EXT_ZFA, "Zfa", True, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZTSO, "Ztso", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZACAS, "Zacas", False, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZICNTR, "Zicntr", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICOND, "Zicond", True, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZIHINTPAUSE, "Zihintpause", True, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZIHPM, "Zihpm", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZVE32X, "Zve32x", True, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZVE32F, "Zve32f", True, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZVE64X, "Zve64x", True, 0),
@@ -199,13 +197,15 @@ def main() -> int:
         ExtDesc(1, RISCV_HWPROBE_EXT_ZCF, "Zcf", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZCMOP, "Zcmop", True, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZAWRS, "Zawrs", True, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZAAMO, "Zaamo", True, 0x0006000F),  # 6.15
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZALRSC, "Zalrsc", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_SUPM, "Supm", True, 0x0006000D),  # 6.13
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZICNTR, "Zicntr", True, 0x0006000F),  # 6.15
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZIHPM, "Zihpm", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZFBFMIN, "Zfbfmin", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZVFBFMIN, "Zvfbfmin", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZVFBFWMA, "Zvfbfwma", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICBOM, "Zicbom", True, 0x0006000F),  # 6.15
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZAAMO, "Zaamo", True, 0x0006000F),  # 6.15
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZALRSC, "Zalrsc", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZABHA, "Zabha", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZALASR, "Zalasr", False, 0),
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICBOP, "Zicbop", True, 0x00060013),  # 6.19
