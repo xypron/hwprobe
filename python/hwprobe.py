@@ -200,19 +200,19 @@ def main() -> int:
         ExtDesc(1, RISCV_HWPROBE_EXT_SUPM, "Supm", True, 0x0006000D),  # 6.13
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICNTR, "Zicntr", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZIHPM, "Zihpm", True, 0x0006000F),  # 6.15
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZFBFMIN, "Zfbfmin", False, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZVFBFMIN, "Zvfbfmin", False, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZVFBFWMA, "Zvfbfwma", False, 0),
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZFBFMIN, "Zfbfmin", False, 0x0006000F),  # 6.15
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZVFBFMIN, "Zvfbfmin", False, 0x0006000F),  # 6.15
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZVFBFWMA, "Zvfbfwma", False, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICBOM, "Zicbom", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZAAMO, "Zaamo", True, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZALRSC, "Zalrsc", True, 0x0006000F),  # 6.15
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZABHA, "Zabha", False, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZALASR, "Zalasr", False, 0),
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZABHA, "Zabha", False, 0x0006000F),  # 6.15
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZALASR, "Zalasr", False, 0x0006000F),  # 6.15
         ExtDesc(1, RISCV_HWPROBE_EXT_ZICBOP, "Zicbop", True, 0x00060013),  # 6.19
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZILSD, "Zilsd", False, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZCLSD, "Zclsd", False, 0),
-        ExtDesc(1, RISCV_HWPROBE_EXT_ZICFILP, "Zicfilp", False, 0),
-        ExtDesc(2, RISCV_HWPROBE_EXT_ZICFISS, "Zicfiss", False, 0),
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZILSD, "Zilsd", False, 0x00060013), # 6.19
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZCLSD, "Zclsd", False, 0x00060013), # 6.19
+        ExtDesc(1, RISCV_HWPROBE_EXT_ZICFILP, "Zicfilp", False, 0x00070000), # 7.0
+        ExtDesc(2, RISCV_HWPROBE_EXT_ZICFISS, "Zicfiss", False, 0x00070000), # 7.0
         ExtDesc(2, RISCV_HWPROBE_EXT_ZICCLSM, "Zicclsm", True, 0x00070003),  # 7.3
         ExtDesc(2, RISCV_HWPROBE_EXT_ZICCAMOA, "Ziccamoa", True, 0x00070003),  # 7.3
         ExtDesc(2, RISCV_HWPROBE_EXT_ZICCIF, "Ziccif", True, 0x00070003),  # 7.3
