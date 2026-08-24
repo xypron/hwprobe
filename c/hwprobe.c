@@ -213,13 +213,15 @@ int main(int argc, char *argv[])
 	// Check extensions
 	for (size_t i = 0; i < ARRAY_SIZE(exts); ++i) {
 		int probe_item = exts[i].probe_item;
-		int detected = probe_item < (int)probe_item_count &&
+		int available = probe_item < (int)probe_item_count &&
+				exts[i].introduced <= version;
+		int detected = available &&
 			       (probe_items[probe_item].value & exts[i].key) != 0;
 		int required = exts[i].required && exts[i].introduced <= version;
 
 		if (verbose) {
 			printf("%-14s %-10s %s\n", exts[i].text,
-			       detected ? "yes" : "no",
+			       available ? (detected ? "yes" : "no") : "-",
 			       exts[i].required ? "yes" : "no");
 		}
 
