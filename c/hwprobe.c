@@ -28,7 +28,7 @@ static void print_usage(FILE *stream, const char *prog)
 		"Usage: %s [-v|--verbose] [-h|--help]\n"
 		"\n"
 		"Check whether this RISC-V system supports the extensions required\n"
-		"by the RVA23 profile, using the riscv_hwprobe() syscall.\n"
+		"by the RVA23U64 profile, using the riscv_hwprobe() syscall.\n"
 		"\n"
 		"Options:\n"
 		"  -v, --verbose  list every extension with its detected/required status\n"
@@ -49,7 +49,7 @@ static unsigned int kernel_version(void)
 		perror("sys_uname failed");
 		return 0;
 	}
-	printf("Kernel release %s\n", uname.release);
+	printf("Kernel release %s\n\n", uname.release);
 
 	token = strtok(uname.release, ".");
 	if (!token)
@@ -208,7 +208,8 @@ int main(int argc, char *argv[])
 	}
 
 	if (verbose)
-		printf("%-14s %-10s %s\n", "Extension", "Detected", "Required by RVA23");
+		printf("%-14s %-10s %s\n",
+		       "Extension", "Detected", "Required by RVA23U64");
 
 	// Check extensions
 	for (size_t i = 0; i < ARRAY_SIZE(exts); ++i) {
@@ -232,12 +233,15 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (missing_count == 0) {
-		printf("Verdict: RVA23 supported\n");
+	if (verbose || missing_count)
+		printf("\n");
+
+	if (!missing_count) {
+		printf("This system probably supports the RVA23U64 profile.\n");
 		return EXIT_SUCCESS;
 	}
 
-	printf("Verdict: RVA23 NOT supported\n");
+	printf("This system does not support the RVA23U64 profile.\n");
 
 	return EXIT_FAILURE;
 }
