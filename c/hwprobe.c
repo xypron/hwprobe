@@ -54,8 +54,8 @@ static void print_usage(FILE *stream, const char *prog)
 		"by the RVA23U64 profile, using the riscv_hwprobe() syscall.\n"
 		"\n"
 		"Options:\n"
-		"  -v, --verbose  list every extension with its detected/required status\n"
-		"                 and the cache block sizes\n"
+		"  -v, --verbose  list every extension with its detected/required status,\n"
+		"                 the cache block sizes, and the server platform rules\n"
 		"  -h, --help     display this help and exit\n",
 		prog);
 }
@@ -421,12 +421,23 @@ static int server_count(const struct server_row *rows, size_t n,
 	return count;
 }
 
-static void print_server(const struct probe_result *probe, int rva23u_missing)
+/*
+ * List the IDs of the MUST rules that are not met, each ID once.
+ */
+static void server_failed_ids(const struct server_row *rows, size_t n,
+			      char *buf, size_t len)
 {
-	struct server_row rows[SERVER_ROWS_MAX];
-	size_t n = check_server(probe, rva23u_missing, rows);
-	int failed = server_count(rows, n, SRV_FAIL);
+	buf[0] = '\0';
+	for (size_t i = 0; i < n; ++i) {
+		if (rows[i].result != SRV_FAIL || strstr(buf, rows[i].id))
+			continue;
+		snprintf(buf + strlen(buf), len - strlen(buf), "%s%s",
+			 buf[0] ? ", " : "", rows[i].id);
+	}
+}
 
+static void print_server_details(const struct server_row *rows, size_t n)
+{
 	printf("RISC-V server platform requirements (current hart):\n");
 	printf("%-8s %-10s %-7s %-6s %s\n", "Rule", "Item", "Level", "Result",
 	       "Detail");
@@ -437,12 +448,32 @@ static void print_server(const struct probe_result *probe, int rva23u_missing)
 	printf("Assumed: RVA_050 (all harts identical).\n");
 	printf("Not observable via hwprobe: SEE_010, SEE_020,\n"
 	       "FIRM_020 (SBI DBTR), FIRM_030 (SBI SSE), FIRM_140 (RIMT).\n");
+	printf("%d rule item(s) not observable.\n\n",
+	       server_count(rows, n, SRV_NA));
+}
+
+/* Returns the number of MUST rules that are not met */
+static int print_server(const struct probe_result *probe, int rva23u_missing,
+			int verbose)
+{
+	struct server_row rows[SERVER_ROWS_MAX];
+	size_t n = check_server(probe, rva23u_missing, rows);
+	int failed = server_count(rows, n, SRV_FAIL);
+	char ids[128];
+
+	printf("\n");
+	if (verbose)
+		print_server_details(rows, n);
+
+	server_failed_ids(rows, n, ids, sizeof(ids));
 	if (failed)
-		printf("Verdict: server platform NOT supported\n\n");
+		printf("The system does not conform to the server platform "
+		       "server specification. %s not met.\n", ids);
 	else
-		printf("Verdict: no violation of the observable rules found "
-		       "(%d not observable)\n\n",
-		       server_count(rows, n, SRV_NA));
+		printf("The system probably conforms to the server platform "
+		       "server specification.\n");
+
+	return failed;
 }
 
 static int do_hwprobe(struct probe_result *probe)
@@ -521,14 +552,12 @@ int main(int argc, char *argv[])
 	if (verbose)
 		print_block_sizes(&probe);
 
-	print_server(&probe, missing_count);
-
-	if (!missing_count) {
+	if (!missing_count)
 		printf("This system probably supports the RVA23U64 profile.\n");
-		return EXIT_SUCCESS;
-	}
+	else
+		printf("This system does not support the RVA23U64 profile.\n");
 
-	printf("This system does not support the RVA23U64 profile.\n");
+	print_server(&probe, missing_count, verbose);
 
-	return EXIT_FAILURE;
+	return missing_count ? EXIT_FAILURE : EXIT_SUCCESS;
 }

@@ -168,6 +168,27 @@ static void test_server_fail(void)
 	CHECK(row_result(&probe, 0, "Zihpm") == SRV_FAIL);
 }
 
+static void test_server_failed_ids(void)
+{
+	struct probe_result probe;
+	struct server_row rows[SERVER_ROWS_MAX];
+	char ids[128];
+	size_t n;
+
+	probe_full(&probe, LINUX_7_4);
+	n = check_server(&probe, 0, rows);
+	server_failed_ids(rows, n, ids, sizeof(ids));
+	CHECK(!strcmp(ids, ""));
+
+	/* Each ID is listed once, in table order */
+	probe.items[PROBE_HIGHEST_VA].value = (1ULL << 38) - 1;
+	probe.items[PROBE_EXT_0].value &= ~RISCV_HWPROBE_EXT_ZICNTR;
+	probe.items[PROBE_EXT_0].value &= ~RISCV_HWPROBE_EXT_ZIHPM;
+	n = check_server(&probe, 2, rows);
+	server_failed_ids(rows, n, ids, sizeof(ids));
+	CHECK(!strcmp(ids, "RVA_010, RVA_020, RVA_060"));
+}
+
 static void test_server_old_kernel(void)
 {
 	struct probe_result probe;
@@ -185,6 +206,7 @@ int main(void)
 	test_extensions();
 	test_server_pass();
 	test_server_fail();
+	test_server_failed_ids();
 	test_server_old_kernel();
 
 	if (failures) {
