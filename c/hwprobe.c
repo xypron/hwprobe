@@ -23,6 +23,7 @@ enum probe_idx {
 	PROBE_ZICBOZ_SIZE,
 	PROBE_ZICBOM_SIZE,
 	PROBE_ZICBOP_SIZE,
+	PROBE_HIGHEST_VA,
 	PROBE_COUNT,
 };
 
@@ -33,6 +34,7 @@ static const long long probe_keys[PROBE_COUNT] = {
 	[PROBE_ZICBOZ_SIZE] = RISCV_HWPROBE_KEY_ZICBOZ_BLOCK_SIZE,
 	[PROBE_ZICBOM_SIZE] = RISCV_HWPROBE_KEY_ZICBOM_BLOCK_SIZE,
 	[PROBE_ZICBOP_SIZE] = RISCV_HWPROBE_KEY_ZICBOP_BLOCK_SIZE,
+	[PROBE_HIGHEST_VA] = RISCV_HWPROBE_KEY_HIGHEST_VIRT_ADDRESS,
 };
 
 struct ext_desc {
@@ -274,6 +276,175 @@ static int check_extensions(const struct probe_result *probe, int verbose)
 	return missing_count;
 }
 
+/*
+ * RISC-V Server Platform Requirements, hart rules. Hwprobe only shows the
+ * user visible state of the current hart. All harts are assumed to be
+ * identical (RVA_050).
+ */
+
+#define SERVER_ROWS_MAX		16
+
+/* Sv39 reaches 2^38 - 1 at most, Sv48 at least 2^46 */
+#define SV48_MIN_VIRT_ADDRESS	(1ULL << 46)
+
+enum server_result {
+	SRV_PASS,
+	SRV_FAIL,	/* MUST rule not met */
+	SRV_WARN,	/* SHOULD rule not met */
+	SRV_NA,		/* not observable via hwprobe */
+};
+
+struct server_row {
+	const char *id;
+	const char *item;
+	int must;
+	enum server_result result;
+	const char *detail;
+};
+
+static enum server_result server_result(int ok, int must)
+{
+	if (ok)
+		return SRV_PASS;
+
+	return must ? SRV_FAIL : SRV_WARN;
+}
+
+static size_t add_server_row(struct server_row *rows, size_t n,
+			     const char *id, const char *item, int must,
+			     enum server_result result, const char *detail)
+{
+	rows[n] = (struct server_row){id, item, must, result, detail};
+
+	return n + 1;
+}
+
+static size_t add_server_na_row(struct server_row *rows, size_t n,
+				const char *id, const char *item, int must)
+{
+	return add_server_row(rows, n, id, item, must, SRV_NA,
+			      "not reported by hwprobe");
+}
+
+static size_t add_server_ext_row(const struct probe_result *probe,
+				 struct server_row *rows, size_t n,
+				 const char *id, const char *item,
+				 long long key, unsigned int introduced,
+				 const char *detail)
+{
+	struct ext_desc ext = {PROBE_EXT_0, key, item, 1, introduced};
+
+	if (!ext_available(probe, &ext))
+		return add_server_row(rows, n, id, item, 1, SRV_NA,
+				      "not reported by this kernel");
+
+	return add_server_row(rows, n, id, item, 1,
+			      server_result(ext_detected(probe, &ext), 1),
+			      detail);
+}
+
+static size_t add_server_sv48_row(const struct probe_result *probe,
+				  struct server_row *rows, size_t n)
+{
+	unsigned long long highest;
+
+	if (!probe_known(probe, PROBE_HIGHEST_VA))
+		return add_server_row(rows, n, "RVA_020", "Sv48", 1, SRV_NA,
+				      "highest address not reported");
+
+	highest = probe->items[PROBE_HIGHEST_VA].value;
+
+	return add_server_row(rows, n, "RVA_020", "Sv48", 1,
+			      server_result(highest >= SV48_MIN_VIRT_ADDRESS,
+					    1),
+			      "kernel paging mode (no4lvl lowers it)");
+}
+
+/*
+ * Check the hart rules (RVA_010 to RVA_060) of the RISC-V Server Platform
+ * Requirements that hwprobe can show. rva23u_missing is the number of
+ * required RVA23U64 extensions that are missing. Returns the number of
+ * rows filled.
+ */
+static size_t check_server(const struct probe_result *probe,
+			   int rva23u_missing, struct server_row *rows)
+{
+	static const char *const must_na[] = {
+		"Zkr", "Ssaia", "Sdtrig", "Sdext", "Ssccfg", "Ssstrict",
+	};
+	size_t n = 0;
+
+	if (rva23u_missing)
+		n = add_server_row(rows, n, "RVA_010", "RVA23S64", 1, SRV_FAIL,
+				   "RVA23U64 extensions missing");
+	else
+		n = add_server_row(rows, n, "RVA_010", "RVA23S64", 1, SRV_NA,
+				   "S-mode extensions not reported");
+	n = add_server_sv48_row(probe, rows, n);
+	for (size_t i = 0; i < ARRAY_SIZE(must_na); ++i)
+		n = add_server_na_row(rows, n, "RVA_020", must_na[i], 1);
+	n = add_server_na_row(rows, n, "RVA_030", "Svadu", 0);
+	n = add_server_na_row(rows, n, "RVA_040", "Ssctr", 0);
+	n = add_server_ext_row(probe, rows, n, "RVA_060", "Zicntr",
+			       RISCV_HWPROBE_EXT_ZICNTR, 0x0006000f,
+			       "3 counters");
+	n = add_server_ext_row(probe, rows, n, "RVA_060", "Zihpm",
+			       RISCV_HWPROBE_EXT_ZIHPM, 0x0006000f,
+			       "number of counters not reported");
+
+	return n;
+}
+
+static const char *server_result_name(enum server_result result)
+{
+	switch (result) {
+	case SRV_PASS:
+		return "PASS";
+	case SRV_FAIL:
+		return "FAIL";
+	case SRV_WARN:
+		return "WARN";
+	default:
+		return "N/A";
+	}
+}
+
+static int server_count(const struct server_row *rows, size_t n,
+			enum server_result result)
+{
+	int count = 0;
+
+	for (size_t i = 0; i < n; ++i)
+		if (rows[i].result == result)
+			++count;
+
+	return count;
+}
+
+static void print_server(const struct probe_result *probe, int rva23u_missing)
+{
+	struct server_row rows[SERVER_ROWS_MAX];
+	size_t n = check_server(probe, rva23u_missing, rows);
+	int failed = server_count(rows, n, SRV_FAIL);
+
+	printf("RISC-V server platform requirements (current hart):\n");
+	printf("%-8s %-10s %-7s %-6s %s\n", "Rule", "Item", "Level", "Result",
+	       "Detail");
+	for (size_t i = 0; i < n; ++i)
+		printf("%-8s %-10s %-7s %-6s %s\n", rows[i].id, rows[i].item,
+		       rows[i].must ? "MUST" : "SHOULD",
+		       server_result_name(rows[i].result), rows[i].detail);
+	printf("Assumed: RVA_050 (all harts identical).\n");
+	printf("Not observable via hwprobe: SEE_010, SEE_020,\n"
+	       "FIRM_020 (SBI DBTR), FIRM_030 (SBI SSE), FIRM_140 (RIMT).\n");
+	if (failed)
+		printf("Verdict: server platform NOT supported\n\n");
+	else
+		printf("Verdict: no violation of the observable rules found "
+		       "(%d not observable)\n\n",
+		       server_count(rows, n, SRV_NA));
+}
+
 static int do_hwprobe(struct probe_result *probe)
 {
 #ifdef __riscv
@@ -349,6 +520,8 @@ int main(int argc, char *argv[])
 
 	if (verbose)
 		print_block_sizes(&probe);
+
+	print_server(&probe, missing_count);
 
 	if (!missing_count) {
 		printf("This system probably supports the RVA23U64 profile.\n");
